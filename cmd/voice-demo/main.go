@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"edgetts/edgetts"
+	"github.com/illussioon/GoEdge-TTS/edgetts"
 )
 
 func main() {

@@ -1,68 +1,75 @@
-# Edge-TTS Go
+# GoEdge-TTS
 
-Небольшая Go-библиотека для Microsoft Edge online Text-to-Speech: передаёте текст и голос, получаете MP3-аудио.
+[English](README.md) | [Русский](README.ru.md) | [Українська](README.uk.md)
 
-Библиотека портирует основной функционал Python-пакета `edge-tts`, но без Python-зависимостей, HTTP-сервера и playback-обвязки.
+A small Go library for Microsoft Edge online Text-to-Speech. Pass text and a voice, get MP3 audio back.
 
-## Возможности
+GoEdge-TTS ports the core behavior of the Python `edge-tts` package without requiring Python, an HTTP server, or playback wrappers.
 
-- Синтез текста в речь через Microsoft Edge TTS WebSocket API.
-- Выбор голоса по `ShortName`, например `en-US-EmmaMultilingualNeural`.
-- Получение списка доступных голосов.
-- Запись результата в `io.Writer` или получение аудио как `[]byte`.
-- Поддержка параметров `rate`, `volume`, `pitch`.
-- Поддержка HTTP/SOCKS proxy через `ProxyURL`, если прокси поддерживается Go transport/dialer окружением.
-- Unit tests и optional integration test с реальным запросом к Edge TTS.
+## Features
 
-## Установка
+- Text-to-speech through the Microsoft Edge TTS WebSocket API.
+- Voice selection by `ShortName`, for example `en-US-EmmaMultilingualNeural`.
+- Fetching the available voice list.
+- Writing audio to an `io.Writer` or returning audio as `[]byte`.
+- `rate`, `volume`, and `pitch` options.
+- Optional proxy URL support.
+- Unit tests and an optional integration test against the real Edge TTS service.
 
-Если используете этот репозиторий локально:
+## Installation
 
-```bash
-git clone <your-repo-url>
-cd Edge-TTS
-go test ./...
-```
+### Add as a dependency
 
-Для подключения из другого Go-модуля локально можно использовать `replace`:
+In your Go project, run:
 
 ```bash
-go mod edit -replace edgetts=/absolute/path/to/Edge-TTS
-go get edgetts
+go get github.com/illussioon/GoEdge-TTS
 ```
 
-Пример `go.mod`:
+Import the package:
+
+```go
+import "github.com/illussioon/GoEdge-TTS/edgetts"
+```
+
+Example `go.mod`:
 
 ```go
 module myapp
 
 go 1.22
 
-require edgetts v0.0.0
-
-replace edgetts => /absolute/path/to/Edge-TTS
+require github.com/illussioon/GoEdge-TTS v0.0.0
 ```
 
-## Быстрый запуск demo
+### Clone the repository
 
-В репозитории есть консольный пример:
+```bash
+git clone https://github.com/illussioon/GoEdge-TTS.git
+cd GoEdge-TTS
+go test ./...
+```
+
+## Quick demo
+
+The repository includes a console demo:
 
 ```bash
 go run ./cmd/voice-demo
 ```
 
-Он делает следующее:
+The demo:
 
-1. загружает и выводит список голосов;
-2. просит выбрать голос по номеру или `ShortName`;
-3. просит ввести текст;
-4. создаёт файл `input.mp3`.
+1. loads and prints the voice list;
+2. asks you to choose a voice by number or `ShortName`;
+3. asks you to enter text;
+4. creates `input.mp3`.
 
-Важно: Microsoft Edge TTS отдаёт MP3, поэтому пример создаёт `input.mp3`, а не WAV.
+Microsoft Edge TTS returns MP3 audio, so the demo creates `input.mp3`, not WAV.
 
-## Пример использования библиотеки
+## Library examples
 
-### Получить аудио как `[]byte`
+### Get audio as `[]byte`
 
 ```go
 package main
@@ -72,7 +79,7 @@ import (
     "os"
     "time"
 
-    "edgetts/edgetts"
+    "github.com/illussioon/GoEdge-TTS/edgetts"
 )
 
 func main() {
@@ -92,7 +99,7 @@ func main() {
 }
 ```
 
-### Записать аудио напрямую в файл
+### Write audio directly to a file
 
 ```go
 package main
@@ -102,7 +109,7 @@ import (
     "os"
     "time"
 
-    "edgetts/edgetts"
+    "github.com/illussioon/GoEdge-TTS/edgetts"
 )
 
 func main() {
@@ -115,8 +122,8 @@ func main() {
     }
     defer file.Close()
 
-    err = edgetts.WriteSpeech(ctx, file, "Привет! Это тест синтеза речи.", edgetts.Options{
-        Voice:  "ru-RU-SvetlanaNeural",
+    err = edgetts.WriteSpeech(ctx, file, "Hello! This is a TTS test.", edgetts.Options{
+        Voice:  "en-US-EmmaMultilingualNeural",
         Rate:   "+0%",
         Volume: "+0%",
         Pitch:  "+0Hz",
@@ -127,7 +134,7 @@ func main() {
 }
 ```
 
-### Получить список голосов
+### List voices
 
 ```go
 package main
@@ -137,7 +144,7 @@ import (
     "fmt"
     "time"
 
-    "edgetts/edgetts"
+    "github.com/illussioon/GoEdge-TTS/edgetts"
 )
 
 func main() {
@@ -173,7 +180,7 @@ type Options struct {
 
 Defaults:
 
-| Поле | Default |
+| Field | Default |
 |---|---|
 | `Voice` | `en-US-EmmaMultilingualNeural` |
 | `Rate` | `+0%` |
@@ -182,20 +189,21 @@ Defaults:
 | `ConnectTimeout` | `10s` |
 | `ReceiveTimeout` | `60s` |
 
-Параметры валидируются так же, как в Python `edge-tts`:
+Parameter format:
 
 - `Rate`: `+10%`, `-20%`, `+0%`
 - `Volume`: `+10%`, `-20%`, `+0%`
 - `Pitch`: `+10Hz`, `-20Hz`, `+0Hz`
 
-Голос можно передавать коротким именем:
+You can pass a short voice name:
 
 ```text
 en-US-EmmaMultilingualNeural
 ru-RU-SvetlanaNeural
+uk-UA-PolinaNeural
 ```
 
-Внутри библиотека преобразует его в формат Microsoft Speech Service:
+Internally it is converted to the Microsoft Speech Service format:
 
 ```text
 Microsoft Server Speech Text to Speech Voice (en-US, EmmaMultilingualNeural)
@@ -207,7 +215,7 @@ Microsoft Server Speech Text to Speech Voice (en-US, EmmaMultilingualNeural)
 func Synthesize(ctx context.Context, text string, opts Options) ([]byte, error)
 ```
 
-Синтезирует весь текст и возвращает MP3-аудио в памяти.
+Synthesizes the full text and returns MP3 audio in memory.
 
 ### `WriteSpeech`
 
@@ -215,7 +223,7 @@ func Synthesize(ctx context.Context, text string, opts Options) ([]byte, error)
 func WriteSpeech(ctx context.Context, w io.Writer, text string, opts Options) error
 ```
 
-Синтезирует текст и пишет MP3-аудио в переданный `io.Writer`. Это предпочтительный вариант для больших текстов, потому что не держит весь результат в памяти.
+Synthesizes text and writes MP3 audio to the provided `io.Writer`. Prefer this for larger text because it does not keep the whole result in memory.
 
 ### `ListVoices`
 
@@ -223,11 +231,11 @@ func WriteSpeech(ctx context.Context, w io.Writer, text string, opts Options) er
 func ListVoices(ctx context.Context, proxyURL string) ([]Voice, error)
 ```
 
-Загружает список доступных голосов Microsoft Edge TTS.
+Loads the available Microsoft Edge TTS voices.
 
-## Как это работает внутри
+## How it works
 
-### 1. Подготовка текста
+### 1. Text preparation
 
 ```text
 input text
@@ -239,13 +247,13 @@ XML escape: &, <, >
 split into chunks <= 4096 UTF-8 bytes
 ```
 
-Текст режется так, чтобы не ломать:
+The text splitter avoids breaking:
 
-- UTF-8 символы;
-- XML entities вроде `&amp;`;
-- слова, если рядом есть пробел или перенос строки.
+- UTF-8 characters;
+- XML entities like `&amp;`;
+- words when a nearby space or newline exists.
 
-### 2. Нормализация настроек
+### 2. Option normalization
 
 ```text
 Options
@@ -257,21 +265,21 @@ voice canonicalization
 regex validation
 ```
 
-Например:
+Example:
 
 ```text
 en-US-EmmaMultilingualNeural
 ```
 
-становится:
+becomes:
 
 ```text
 Microsoft Server Speech Text to Speech Voice (en-US, EmmaMultilingualNeural)
 ```
 
-### 3. DRM token / headers
+### 3. DRM token and headers
 
-Microsoft Edge TTS требует специальные query parameters и headers:
+Microsoft Edge TTS expects special query parameters and headers:
 
 ```text
 Sec-MS-GEC
@@ -280,7 +288,7 @@ TrustedClientToken
 Cookie: muid=<random>
 ```
 
-`Sec-MS-GEC` считается так:
+`Sec-MS-GEC` is generated like this:
 
 ```text
 current unix time
@@ -292,69 +300,69 @@ current unix time
   uppercase hex
 ```
 
-Если сервер отвечает `403`, библиотека читает HTTP header `Date`, корректирует clock skew и повторяет запрос один раз.
+If the server returns `403`, the library reads the HTTP `Date` header, adjusts clock skew, and retries once.
 
 ### 4. WebSocket synthesis
 
-Для каждого text chunk открывается WebSocket:
+For each text chunk, the library opens a WebSocket connection:
 
 ```text
 wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1
 ```
 
-Библиотека отправляет два text frame:
+It sends two text frames:
 
 ```text
 Path:speech.config
 ```
 
-и
+and
 
 ```text
 Path:ssml
 ```
 
-SSML содержит выбранный голос, rate, volume, pitch и подготовленный текст.
+The SSML contains the selected voice, rate, volume, pitch, and prepared text.
 
-### 5. Получение MP3
+### 5. MP3 output
 
-Сервер присылает:
+The server sends:
 
 - text frames: `response`, `turn.start`, `audio.metadata`, `turn.end`;
 - binary frames: MP3 audio chunks.
 
-Binary frame устроен так:
+Binary frame layout:
 
 ```text
 [2 bytes header length][headers][\r\n][mp3 payload]
 ```
 
-Библиотека проверяет:
+The library checks:
 
 ```text
 Path:audio
 Content-Type:audio/mpeg
 ```
 
-и пишет только MP3 payload в `io.Writer`.
+and writes only the MP3 payload to the `io.Writer`.
 
-## Тесты
+## Tests
 
-Обычные unit tests:
+Unit tests:
 
 ```bash
 go test ./...
 ```
 
-Integration test с реальным запросом к Microsoft Edge TTS:
+Integration test with a real Microsoft Edge TTS request:
 
 ```bash
 go test -tags=integration ./...
 ```
 
-Integration test требует интернет и может зависеть от доступности Microsoft Edge TTS.
+The integration test requires internet access and depends on Microsoft Edge TTS availability.
 
-## Структура проекта
+## Project structure
 
 ```text
 .
@@ -374,11 +382,13 @@ Integration test требует интернет и может зависеть 
 │   └── *_test.go
 ├── go.mod
 ├── go.sum
-└── README.md
+├── README.md
+├── README.ru.md
+└── README.uk.md
 ```
 
-## Ограничения
+## Limitations
 
-- Edge TTS — неофициальный API Microsoft Edge, поэтому протокол может измениться.
-- На выходе сейчас MP3: `audio-24khz-48kbitrate-mono-mp3`.
-- WAV напрямую не генерируется. Если нужен WAV, MP3 нужно конвертировать отдельно, например через `ffmpeg`.
+- Edge TTS is an unofficial Microsoft Edge API, so the protocol can change.
+- The current output format is MP3: `audio-24khz-48kbitrate-mono-mp3`.
+- WAV is not generated directly. If you need WAV, convert MP3 separately, for example with `ffmpeg`.

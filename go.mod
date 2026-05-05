@@ -1,4 +1,4 @@
-module edgetts
+module github.com/illussioon/GoEdge-TTS
 
 go 1.22
 
